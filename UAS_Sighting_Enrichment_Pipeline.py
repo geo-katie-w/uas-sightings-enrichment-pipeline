@@ -22,9 +22,9 @@ except ImportError:
     print("WARNING: jsonschema not installed. Cache validation disabled. Install with: pip install jsonschema")
 
 # --- CONFIGURATION ---
-# Default to platform-agnostic path in user's home directory
+# Default to a common Windows-friendly documents path
 # You can override this by setting the FAA_DATA_PATH environment variable
-FOLDER_PATH = os.getenv('FAA_DATA_PATH') or str(Path.home() / "FAA_UAS_Sightings")
+FOLDER_PATH = os.getenv('FAA_DATA_PATH') or str(Path("C:/Documents/FAA_UAS_Sightings"))
 RUN_DATE = datetime.now().strftime("%Y-%m-%d")  # e.g., "2026-02-07"
 
 # Security Configuration
@@ -40,6 +40,7 @@ ALLOWED_BASE_DIRS = [
     os.getcwd(),  # Current working directory
     str(Path.home() / "FAA_UAS_Sightings"),
     str(Path.home() / "Documents" / "FAA_UAS_Sightings"),
+    str(Path("C:/Documents/FAA_UAS_Sightings")),
 ]
 
 # Logging Configuration
@@ -226,7 +227,7 @@ except SecurityError as e:
 
 # Create necessary folders
 for folder in [SPLIT_FOLDER, OUTPUT_FOLDER, YEARLY_FOLDER]:
-    folder.mkdir(exist_ok=True)
+    folder.mkdir(parents=True, exist_ok=True)
 
 ROWS_PER_SPLIT = 250  # Smaller chunks = better stability for 2025 files
 geolocator = Nominatim(user_agent="faa_uas_precision_v8")
@@ -485,6 +486,7 @@ def find_nearest_airport(city, state, attempt=1):
 def phase_1_split():
     """Drops bloat columns and shatters files."""
     all_files = list(Path(FOLDER_PATH).glob('*.csv')) + list(Path(FOLDER_PATH).glob('*.xlsx'))
+    logger.info(f"Found {len(all_files)} input file(s) in {FOLDER_PATH}")
     for file_path in all_files:
         if "Enriched_" in file_path.name or "Split_Chunks" in str(file_path): continue
         
@@ -639,7 +641,7 @@ def phase_3_consolidate_by_year():
         else:
             logger.info(f"  Removed {exact_dupes} exact duplicate records")
         
-        output_file = YEARLY_FOLDER / f"FAA_Master_{year}.csv"
+        output_file = YEARLY_FOLDER / f"FAA_{year}.csv"
         combined.to_csv(output_file, index=False)
         logger.info(f"  Saved {len(combined)} records to {output_file.name}")
 

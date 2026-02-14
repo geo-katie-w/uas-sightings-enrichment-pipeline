@@ -74,7 +74,7 @@ pip install pywin32
 ### **Basic Usage**
 
 ```bash
-# The pipeline auto-detects your platform and uses ~/FAA_UAS_Sightings by default
+# The pipeline uses C:\Documents\FAA_UAS_Sightings by default
 # Place your CSV/Excel files there, then run:
 python UAS_Sighting_Enrichment_Pipeline.py
 
@@ -251,11 +251,9 @@ pip install pywin32
 
 **Option A: Use Default (Recommended)**
 
-The pipeline automatically uses `~/FAA_UAS_Sightings` in your home directory:
+The pipeline uses `C:\Documents\FAA_UAS_Sightings` by default on Windows.
 
-- Windows: `C:\Users\YourName\FAA_UAS_Sightings`
-- Mac: `/Users/YourName/FAA_UAS_Sightings`
-- Linux: `/home/YourName/FAA_UAS_Sightings`
+If your files are stored elsewhere, set `FAA_DATA_PATH` before running.
 
 Just create the folder and place your files there!
 
@@ -274,10 +272,10 @@ set FAA_DATA_PATH="C:\path\to\your\data"
 
 **Option C: Edit Configuration File**
 
-Edit line 26 in `UAS_Sighting_Enrichment_Pipeline.py`:
+Edit the `FOLDER_PATH` line in `UAS_Sighting_Enrichment_Pipeline.py`:
 
 ```python
-FOLDER_PATH = os.getenv('FAA_DATA_PATH') or str(Path.home() / "FAA_UAS_Sightings")
+FOLDER_PATH = os.getenv('FAA_DATA_PATH') or str(Path("C:/Documents/FAA_UAS_Sightings"))
 ```
 
 ### **2. Security: Allowed Directories**
@@ -310,7 +308,7 @@ LAT_MIN, LAT_MAX = 25, 50     # South to North
 
 | Variable | Description | Default | Example |
 |----------|-------------|---------|----------|
-| `FAA_DATA_PATH` | Data folder location | `~/FAA_UAS_Sightings` | `/data/faa` |
+| `FAA_DATA_PATH` | Data folder location | `C:\Documents\FAA_UAS_Sightings` | `/data/faa` |
 | `FAA_PIPELINE_DEBUG` | Enable debug logging | `false` | `true` |
 
 ### **6. Logging Configuration**
