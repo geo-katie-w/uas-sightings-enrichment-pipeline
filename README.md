@@ -1,8 +1,12 @@
 # UAS Sighting Enrichment Pipeline
 
+[![Security: Hardened](https://img.shields.io/badge/security-hardened-green.svg)](https://github.com/geo-katie-w/uas-sightings-enrichment-pipeline)
+[![Platform: Cross-Platform](https://img.shields.io/badge/platform-windows%20%7C%20mac%20%7C%20linux-blue.svg)](https://github.com/geo-katie-w/uas-sightings-enrichment-pipeline)
+[![Python: 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
 ## Overview
 
-The **UAS Sighting Enrichment Pipeline** is an automated data processing tool designed to transform raw FAA Unmanned Aircraft System (UAS) sighting reports into clean, structured, GIS-ready datasets.
+The **UAS Sighting Enrichment Pipeline** is a **production-grade, security-hardened** data processing tool designed to transform raw FAA Unmanned Aircraft System (UAS) sighting reports into clean, structured, GIS-ready datasets.
 
 The pipeline extracts critical information from unstructured text summaries and enriches each record with:
 
@@ -13,7 +17,88 @@ The pipeline extracts critical information from unstructured text summaries and 
 - **Evasive Action** flags
 - **Law Enforcement Agency** notifications
 
+**Security-First Design**: Built with comprehensive security controls including path traversal protection, file size validation, ReDoS prevention, and secure file permissions.
+
+**Cross-Platform**: Runs seamlessly on Windows, macOS, and Linux with platform-aware file permission handling.
+
 Designed to handle large datasets efficiently while respecting API rate limits, the pipeline uses a three-phase architecture: Split → Enrich → Consolidate.
+
+---
+
+## Data Source & Significance
+
+### **What is This Data?**
+
+This pipeline processes **official FAA UAS (Unmanned Aircraft System) sighting reports** – public records of drone encounters reported by pilots, law enforcement, and citizens across the United States.
+
+**Official Data Source**: [FAA UAS Sightings Reports](https://www.faa.gov/uas/resources/public_records/uas_sightings_report)
+
+### **Why This Matters**
+
+UAS sighting data is critical for:
+
+- **Aviation Safety**: Identifying high-risk areas where drones pose collision hazards to manned aircraft
+- **Regulatory Compliance**: Tracking unauthorized drone operations near airports and restricted airspace
+- **Law Enforcement**: Supporting investigations of illegal drone activity and airspace violations
+- **Policy Development**: Informing FAA regulations and airspace management decisions
+- **Public Awareness**: Understanding the scale and nature of drone incidents nationwide
+
+### **Data Characteristics**
+
+- **Timeframe**: Reports dating back to 2014, updated regularly by the FAA
+- **Volume**: Thousands of incidents per year (growing annually)
+- **Geographic Coverage**: All 50 US states and territories
+- **Format**: Free-form text narratives optimized for human readability
+- **Opportunity**: Reports are designed for incident documentation rather than automated analysis
+
+**This pipeline transforms narrative-style sighting reports into structured, GIS-ready datasets** that enable spatial analysis, trend identification, and evidence-based decision making.
+
+---
+
+## Quick Start
+
+### **Installation**
+
+```bash
+# Clone the repository
+git clone https://github.com/geo-katie-w/uas-sightings-enrichment-pipeline.git
+cd uas-sightings-enrichment-pipeline
+
+# Install required dependencies
+pip install pandas airportsdata geopy openpyxl jsonschema
+
+# Optional: For Windows users - enhanced file permissions
+pip install pywin32
+```
+
+### **Basic Usage**
+
+```bash
+# The pipeline auto-detects your platform and uses ~/FAA_UAS_Sightings by default
+# Place your CSV/Excel files there, then run:
+python UAS_Sighting_Enrichment_Pipeline.py
+
+# Or specify a custom path:
+export FAA_DATA_PATH="/path/to/your/data"  # Mac/Linux
+set FAA_DATA_PATH="C:\path\to\your\data"   # Windows
+python UAS_Sighting_Enrichment_Pipeline.py
+```
+
+### **Enable Debug Logging**
+
+```bash
+# Mac/Linux
+export FAA_PIPELINE_DEBUG=true
+python UAS_Sighting_Enrichment_Pipeline.py
+
+# Windows PowerShell
+$env:FAA_PIPELINE_DEBUG="true"
+python UAS_Sighting_Enrichment_Pipeline.py
+
+# Windows Command Prompt
+set FAA_PIPELINE_DEBUG=true
+python UAS_Sighting_Enrichment_Pipeline.py
+```
 
 ---
 
@@ -57,6 +142,24 @@ Designed to handle large datasets efficiently while respecting API rate limits, 
 - **Persistent Geocoding Cache**: Saves API lookups to disk, reloads on restart
 - **Error Handling**: Graceful failure with detailed logging
 - **Configurable Retry Logic**: API timeout handling with exponential backoff
+
+### **Security Features**
+
+- **Path Traversal Protection**: Validates all file paths against allowed directories
+- **File Size Validation**: 100MB limit prevents memory exhaustion attacks
+- **ReDoS Prevention**: Regex timeout protection (2-second limit) prevents catastrophic backtracking
+- **Secure File Permissions**: Cache files restricted to owner-only access (0600 on Unix, ACL on Windows)
+- **JSON Schema Validation**: Cache data validated against schema to prevent poisoning attacks
+- **Input Sanitization**: Text length limits (50,000 chars) prevent processing abuse
+- **Structured Logging**: Professional logging system with configurable debug mode
+- **No SQL/XSS Vulnerabilities**: File-based processing only, no database or web output
+
+### **Cross-Platform Compatibility**
+
+- **Intelligent Path Handling**: Uses `Path.home()` for platform-agnostic defaults
+- **Platform-Aware Permissions**: Windows ACLs on Windows, Unix permissions on Mac/Linux
+- **Environment Variable Support**: Override defaults with `FAA_DATA_PATH`
+- **Automatic Platform Detection**: Adapts behavior based on operating system
 
 ---
 
@@ -106,11 +209,14 @@ Enriched files contain all original columns plus:
 - Python 3.8 or higher
 - 4GB+ RAM recommended for large datasets
 - Internet connection (for geocoding API)
+- **Operating Systems**: Windows 10+, macOS 10.14+, Linux (any modern distribution)
 
 ### **Python Dependencies**
 
+#### **Required Packages**
+
 ```bash
-pip install pandas airportsdata geopy openpyxl
+pip install pandas airportsdata geopy openpyxl jsonschema
 ```
 
 **Package Descriptions:**
@@ -119,6 +225,16 @@ pip install pandas airportsdata geopy openpyxl
 - `airportsdata` - IATA/ICAO airport database with coordinates
 - `geopy` - Geocoding library (Nominatim integration)
 - `openpyxl` - Excel file format support
+- `jsonschema` - Cache validation and security (required for validation)
+
+#### **Optional Packages**
+
+```bash
+# Windows users - for proper file permission security
+pip install pywin32
+```
+
+- `pywin32` - Windows-specific file ACL management (recommended for Windows)
 
 ### **Input Data Requirements**
 
@@ -133,13 +249,45 @@ pip install pandas airportsdata geopy openpyxl
 
 ### **1. Set Your Data Folder Path**
 
-Edit line 14 in `UAS_Sighting_Enrichment_Pipeline.py`:
+**Option A: Use Default (Recommended)**
 
-```python
-FOLDER_PATH = r"C:/Documents/FAA_UAS_Sightings"  # Update this path
+The pipeline automatically uses `~/FAA_UAS_Sightings` in your home directory:
+- Windows: `C:\Users\YourName\FAA_UAS_Sightings`
+- Mac: `/Users/YourName/FAA_UAS_Sightings`
+- Linux: `/home/YourName/FAA_UAS_Sightings`
+
+Just create the folder and place your files there!
+
+**Option B: Use Environment Variable**
+
+```bash
+# Mac/Linux
+export FAA_DATA_PATH="/path/to/your/data"
+
+# Windows PowerShell
+$env:FAA_DATA_PATH="C:\path\to\your\data"
+
+# Windows Command Prompt
+set FAA_DATA_PATH="C:\path\to\your\data"
 ```
 
-### **2. Optional: Adjust Processing Parameters**
+**Option C: Edit Configuration File**
+
+Edit line 26 in `UAS_Sighting_Enrichment_Pipeline.py`:
+
+```python
+FOLDER_PATH = os.getenv('FAA_DATA_PATH') or str(Path.home() / "FAA_UAS_Sightings")
+```
+
+### **2. Security: Allowed Directories**
+
+By default, the pipeline restricts file access to:
+- Your home directory and subdirectories
+- Current working directory
+
+To allow additional directories, edit `ALLOWED_BASE_DIRS` (lines 34-39).
+
+### **3. Optional: Adjust Processing Parameters**
 
 ```python
 ROWS_PER_SPLIT = 250          # Chunk size (smaller = more stable)
@@ -147,13 +295,42 @@ MAX_RETRY_ATTEMPTS = 3        # API retry limit
 RETRY_DELAY_BASE = 30         # Seconds between retries
 ```
 
-### **3. Coordinate Validation Bounds**
+### **4. Coordinate Validation Bounds**
 
 US territory boundaries (default):
 
 ```python
 LON_MIN, LON_MAX = -125, -65  # West to East
 LAT_MIN, LAT_MAX = 25, 50     # South to North
+```
+
+### **5. Environment Variables**
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|----------|
+| `FAA_DATA_PATH` | Data folder location | `~/FAA_UAS_Sightings` | `/data/faa` |
+| `FAA_PIPELINE_DEBUG` | Enable debug logging | `false` | `true` |
+
+### **6. Logging Configuration**
+
+The pipeline uses Python's logging module with two levels:
+
+- **INFO (default)**: Progress updates, file counts, validation summaries
+- **DEBUG**: Detailed pattern matching, airport extraction logic, coordinate population
+
+Enable debug mode for troubleshooting:
+
+```bash
+# See detailed extraction logic
+export FAA_PIPELINE_DEBUG=true
+python UAS_Sighting_Enrichment_Pipeline.py
+```
+
+Logs include timestamps, log levels, and structured messages:
+```
+2026-02-13 14:23:15 - INFO - Loaded 5234 US IATA airports and 3421 ICAO mappings
+2026-02-13 14:23:16 - DEBUG - Extracted airport 'LAX' (priority: critical)
+2026-02-13 14:23:17 - INFO - Valid coordinates: 245/250 records
 ```
 
 ---
@@ -191,6 +368,74 @@ Remove-Item "C:\Documents\FAA_UAS_Sightings\Processed_Files\2026-02-07" -Recurse
 ```
 
 Then rerun the script.
+
+---
+
+## Security Best Practices
+
+### **File Permissions**
+
+The geocoding cache file is automatically secured:
+- **Unix/Linux/Mac**: Permissions set to 0600 (owner read/write only)
+- **Windows**: ACL restricts access to current user only (requires `pywin32`)
+
+Verify cache permissions:
+
+```bash
+# Unix/Linux/Mac
+ls -l ~/FAA_UAS_Sightings/geocoding_cache.json
+# Should show: -rw------- (600)
+
+# Windows PowerShell
+Get-Acl ~/FAA_UAS_Sightings/geocoding_cache.json | Format-List
+```
+
+### **Path Traversal Protection**
+
+The pipeline validates all paths before processing. If you see:
+
+```
+SecurityError: Folder path 'X' is outside allowed directories
+```
+
+Add the path to `ALLOWED_BASE_DIRS` in the configuration.
+
+### **File Size Limits**
+
+Files exceeding 100MB are automatically rejected:
+
+```
+ERROR: file.csv exceeds size limit (150.3MB > 100MB), skipping
+```
+
+Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
+
+### **Input Validation**
+
+- CSV parsing errors are logged but don't crash the pipeline (`on_bad_lines='warn'`)
+- Text fields are truncated to 50,000 characters to prevent ReDoS
+- Regex operations timeout after 2 seconds
+- JSON cache is validated against schema on every load
+
+### **Running in Production**
+
+1. **Set restrictive directory permissions**:
+   ```bash
+   chmod 700 ~/FAA_UAS_Sightings  # Unix/Linux/Mac
+   ```
+
+2. **Use environment variables** instead of hardcoding paths
+
+3. **Review logs regularly** for warnings/errors
+
+4. **Keep dependencies updated**:
+   ```bash
+   pip install --upgrade pandas geopy jsonschema
+   ```
+
+5. **Validate cache integrity** if shared across systems:
+   - Delete `geocoding_cache.json` if suspicious
+   - Cache regenerates automatically
 
 ---
 
@@ -240,16 +485,70 @@ Then rerun the script.
 - **Cache speedup**: 80-95% faster on subsequent runs with same cities
 - **API throttling**: Script pauses automatically, don't interrupt
 - **Memory usage**: ~200-500MB for typical processing
+- **File size limit**: 100MB max per file (configurable for security)
+- **Regex timeout**: 2-second limit prevents ReDoS attacks
+- **Chunk size**: 250 rows (smaller = more stable, prevents memory issues)
+
+### **Platform-Specific Performance**
+
+- **Windows**: Slightly slower file I/O due to ACL overhead (negligible)
+- **macOS/Linux**: Faster Unix permission handling
+- **All platforms**: Identical processing logic and accuracy
 
 ---
 
 ## Use Cases
 
-✅ **GIS Mapping** - Import to ArcGIS Online, QGIS, or other mapping platforms  
-✅ **Spatial Analysis** - Analyze sighting patterns by airport proximity  
-✅ **Trend Analysis** - Track drone activity over time and location  
-✅ **Law Enforcement** - Identify response patterns by jurisdiction  
-✅ **Aviation Safety** - Assess risk areas and altitude distributions  
+**GIS Mapping** - Import to ArcGIS Online, QGIS, or other mapping platforms  
+**Spatial Analysis** - Analyze sighting patterns by airport proximity  
+**Trend Analysis** - Track drone activity over time and location  
+**Law Enforcement** - Identify response patterns by jurisdiction  
+**Aviation Safety** - Assess risk areas and altitude distributions  
+
+---
+
+## Platform-Specific Notes
+
+### **Windows**
+
+- **File Permissions**: Install `pywin32` for proper ACL security:
+  ```powershell
+  pip install pywin32
+  ```
+
+- **Path Format**: Use forward slashes or raw strings:
+  ```python
+  r"C:\Users\Name\Data"  # Raw string
+  "C:/Users/Name/Data"    # Forward slashes (recommended)
+  ```
+
+- **Environment Variables**:
+  ```powershell
+  # PowerShell
+  $env:FAA_DATA_PATH="C:\Data\FAA"
+  
+  # Command Prompt
+  set FAA_DATA_PATH=C:\Data\FAA
+  ```
+
+### **macOS**
+
+- Default data location: `/Users/YourName/FAA_UAS_Sightings`
+- File permissions: Automatically set to 0600
+- Environment variables:
+  ```bash
+  export FAA_DATA_PATH="/Users/YourName/custom/path"
+  ```
+
+### **Linux**
+
+- Default data location: `/home/YourName/FAA_UAS_Sightings`
+- File permissions: Automatically set to 0600
+- Works on all distributions (Ubuntu, Fedora, Debian, etc.)
+- Environment variables:
+  ```bash
+  export FAA_DATA_PATH="/data/faa"
+  ```
 
 ---
 
