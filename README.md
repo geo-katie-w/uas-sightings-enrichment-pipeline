@@ -6,7 +6,7 @@
 
 ## Overview
 
-The **UAS Sighting Enrichment Pipeline** is a **production-grade, security-hardened** data processing tool designed to transform raw FAA Unmanned Aircraft System (UAS) sighting reports into clean, structured, GIS-ready datasets.
+The **UAS Sighting Enrichment Pipeline** is a data processing tool designed to transform raw FAA Unmanned Aircraft System (UAS) sighting reports into clean, structured, GIS-ready datasets.
 
 The pipeline extracts critical information from unstructured text summaries and enriches each record with:
 
@@ -252,6 +252,7 @@ pip install pywin32
 **Option A: Use Default (Recommended)**
 
 The pipeline automatically uses `~/FAA_UAS_Sightings` in your home directory:
+
 - Windows: `C:\Users\YourName\FAA_UAS_Sightings`
 - Mac: `/Users/YourName/FAA_UAS_Sightings`
 - Linux: `/home/YourName/FAA_UAS_Sightings`
@@ -282,6 +283,7 @@ FOLDER_PATH = os.getenv('FAA_DATA_PATH') or str(Path.home() / "FAA_UAS_Sightings
 ### **2. Security: Allowed Directories**
 
 By default, the pipeline restricts file access to:
+
 - Your home directory and subdirectories
 - Current working directory
 
@@ -327,6 +329,7 @@ python UAS_Sighting_Enrichment_Pipeline.py
 ```
 
 Logs include timestamps, log levels, and structured messages:
+
 ```
 2026-02-13 14:23:15 - INFO - Loaded 5234 US IATA airports and 3421 ICAO mappings
 2026-02-13 14:23:16 - DEBUG - Extracted airport 'LAX' (priority: critical)
@@ -376,6 +379,7 @@ Then rerun the script.
 ### **File Permissions**
 
 The geocoding cache file is automatically secured:
+
 - **Unix/Linux/Mac**: Permissions set to 0600 (owner read/write only)
 - **Windows**: ACL restricts access to current user only (requires `pywin32`)
 
@@ -420,6 +424,7 @@ Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
 ### **Running in Production**
 
 1. **Set restrictive directory permissions**:
+
    ```bash
    chmod 700 ~/FAA_UAS_Sightings  # Unix/Linux/Mac
    ```
@@ -429,6 +434,7 @@ Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
 3. **Review logs regularly** for warnings/errors
 
 4. **Keep dependencies updated**:
+
    ```bash
    pip install --upgrade pandas geopy jsonschema
    ```
@@ -512,17 +518,20 @@ Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
 ### **Windows**
 
 - **File Permissions**: Install `pywin32` for proper ACL security:
+
   ```powershell
   pip install pywin32
   ```
 
 - **Path Format**: Use forward slashes or raw strings:
+
   ```python
   r"C:\Users\Name\Data"  # Raw string
   "C:/Users/Name/Data"    # Forward slashes (recommended)
   ```
 
 - **Environment Variables**:
+
   ```powershell
   # PowerShell
   $env:FAA_DATA_PATH="C:\Data\FAA"
@@ -536,6 +545,7 @@ Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
 - Default data location: `/Users/YourName/FAA_UAS_Sightings`
 - File permissions: Automatically set to 0600
 - Environment variables:
+
   ```bash
   export FAA_DATA_PATH="/Users/YourName/custom/path"
   ```
@@ -546,6 +556,7 @@ Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
 - File permissions: Automatically set to 0600
 - Works on all distributions (Ubuntu, Fedora, Debian, etc.)
 - Environment variables:
+
   ```bash
   export FAA_DATA_PATH="/data/faa"
   ```
