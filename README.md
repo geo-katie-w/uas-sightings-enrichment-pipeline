@@ -172,7 +172,7 @@ python -m uas_pipeline.cli
 
 The pipeline creates the following folder hierarchy:
 
-```
+```text
 FOLDER_PATH/
 ├── your_source_files.csv           # Original raw data
 ├── Split_Chunks/
@@ -254,7 +254,7 @@ pip install pywin32
 
 ### **1. Set Your Data Folder Path**
 
-**Option A: Use Default (Recommended)**
+#### Option A: Use Default (Recommended)
 
 The pipeline uses `C:\Documents\FAA_UAS_Sightings` by default on Windows.
 On macOS/Linux, set `FAA_DATA_PATH` (or update the default in code).
@@ -263,7 +263,7 @@ If your files are stored elsewhere, set `FAA_DATA_PATH` before running.
 
 Create the folder and place your files there.
 
-**Option B: Use Environment Variable**
+#### Option B: Use Environment Variable
 
 ```bash
 # Mac/Linux
@@ -276,7 +276,7 @@ $env:FAA_DATA_PATH="C:\path\to\your\data"
 set FAA_DATA_PATH="C:\path\to\your\data"
 ```
 
-**Option C: Edit Configuration File**
+#### Option C: Edit Configuration File
 
 Edit the default data path in `uas_pipeline/config.py`:
 
@@ -320,7 +320,7 @@ LAT_MIN, LAT_MAX = 25, 50     # South to North
 ### **5. Environment Variables**
 
 | Variable | Description | Default | Example |
-|----------|-------------|---------|----------|
+| ---------- | ------------- | --------- | ---------- |
 | `FAA_DATA_PATH` | Data folder location | `C:\Documents\FAA_UAS_Sightings` | `/data/faa` |
 | `FAA_PIPELINE_DEBUG` | Enable debug logging | `false` | `true` |
 
@@ -341,7 +341,7 @@ python -m uas_pipeline.cli
 
 Logs include timestamps, log levels, and structured messages:
 
-```
+```text
 2026-02-13 14:23:15 - INFO - Loaded 5234 US IATA airports and 3421 ICAO mappings
 2026-02-13 14:23:16 - DEBUG - Extracted airport 'LAX' (priority: critical)
 2026-02-13 14:23:17 - INFO - Valid coordinates: 245/250 records
@@ -415,7 +415,7 @@ Get-Acl ~/FAA_UAS_Sightings/geocoding_cache.json | Format-List
 
 The pipeline validates all paths before processing. If you see:
 
-```
+```bash
 SecurityError: Folder path 'X' is outside allowed directories
 ```
 
@@ -425,7 +425,7 @@ Add the path to `ALLOWED_BASE_DIRS` in the configuration.
 
 Files exceeding 100MB are automatically rejected:
 
-```
+```bash
 ERROR: file.csv exceeds size limit (150.3MB > 100MB), skipping
 ```
 
