@@ -76,28 +76,33 @@ pip install pywin32
 ```bash
 # The pipeline uses C:\Documents\FAA_UAS_Sightings by default
 # Place your CSV/Excel files there, then run:
-python UAS_Sighting_Enrichment_Pipeline.py
+python -m uas_pipeline.cli
 
 # Or specify a custom path:
 export FAA_DATA_PATH="/path/to/your/data"  # Mac/Linux
 set FAA_DATA_PATH="C:\path\to\your\data"   # Windows
-python UAS_Sighting_Enrichment_Pipeline.py
+python -m uas_pipeline.cli
+
+# Optional: pass an explicit path
+python -m uas_pipeline.cli --data-path "C:\Documents\FAA_UAS_Sightings"
 ```
+
+**Legacy note:** The monolithic script has been archived in older_version_backup. The CLI above is the recommended entry point.
 
 ### **Enable Debug Logging**
 
 ```bash
 # Mac/Linux
 export FAA_PIPELINE_DEBUG=true
-python UAS_Sighting_Enrichment_Pipeline.py
+python -m uas_pipeline.cli
 
 # Windows PowerShell
 $env:FAA_PIPELINE_DEBUG="true"
-python UAS_Sighting_Enrichment_Pipeline.py
+python -m uas_pipeline.cli
 
 # Windows Command Prompt
 set FAA_PIPELINE_DEBUG=true
-python UAS_Sighting_Enrichment_Pipeline.py
+python -m uas_pipeline.cli
 ```
 
 ---
@@ -129,7 +134,7 @@ python UAS_Sighting_Enrichment_Pipeline.py
 ### **Phase 3: Automated Consolidation**
 
 - Searches across all dated processing runs
-- Merges records by year into master files (FAA_Master_2023.csv, etc.)
+- Merges records by year into master files (FAA_2023.csv, etc.)
 - **Smart Deduplication**:
   - Removes exact duplicates
   - Identifies likely duplicates by date+city+altitude
@@ -181,9 +186,9 @@ FOLDER_PATH/
 │       ├── Enriched_file_part_2.csv
 │       └── ...
 ├── Yearly_Masters/                  # FINAL OUTPUT
-│   ├── FAA_Master_2023.csv
-│   ├── FAA_Master_2024.csv
-│   └── FAA_Master_2025.csv
+│   ├── FAA_2023.csv
+│   ├── FAA_2024.csv
+│   └── FAA_2025.csv
 └── geocoding_cache.json            # Persistent API cache
 ```
 
@@ -252,10 +257,11 @@ pip install pywin32
 **Option A: Use Default (Recommended)**
 
 The pipeline uses `C:\Documents\FAA_UAS_Sightings` by default on Windows.
+On macOS/Linux, set `FAA_DATA_PATH` (or update the default in code).
 
 If your files are stored elsewhere, set `FAA_DATA_PATH` before running.
 
-Just create the folder and place your files there!
+Create the folder and place your files there.
 
 **Option B: Use Environment Variable**
 
@@ -272,10 +278,17 @@ set FAA_DATA_PATH="C:\path\to\your\data"
 
 **Option C: Edit Configuration File**
 
-Edit the `FOLDER_PATH` line in `UAS_Sighting_Enrichment_Pipeline.py`:
+Edit the default data path in `uas_pipeline/config.py`:
 
 ```python
-FOLDER_PATH = os.getenv('FAA_DATA_PATH') or str(Path("C:/Documents/FAA_UAS_Sightings"))
+def default_data_path() -> Path:
+  return Path("C:/Documents/FAA_UAS_Sightings")
+```
+
+**Recommended entry point:**
+
+```bash
+python -m uas_pipeline.cli
 ```
 
 ### **2. Security: Allowed Directories**
@@ -285,7 +298,7 @@ By default, the pipeline restricts file access to:
 - Your home directory and subdirectories
 - Current working directory
 
-To allow additional directories, edit `ALLOWED_BASE_DIRS` (lines 34-39).
+To allow additional directories, edit `ALLOWED_BASE_DIRS` in `uas_pipeline/security.py`.
 
 ### **3. Optional: Adjust Processing Parameters**
 
@@ -323,7 +336,7 @@ Enable debug mode for troubleshooting:
 ```bash
 # See detailed extraction logic
 export FAA_PIPELINE_DEBUG=true
-python UAS_Sighting_Enrichment_Pipeline.py
+python -m uas_pipeline.cli
 ```
 
 Logs include timestamps, log levels, and structured messages:
@@ -341,13 +354,19 @@ Logs include timestamps, log levels, and structured messages:
 ### **Basic Execution**
 
 ```bash
-python UAS_Sighting_Enrichment_Pipeline.py
+python -m uas_pipeline.cli
+```
+
+### **Run Tests**
+
+```bash
+python -m unittest
 ```
 
 ### **Expected Workflow**
 
 1. Place raw CSV/Excel files in your configured `FOLDER_PATH`
-2. Run the script
+2. Run the CLI (`python -m uas_pipeline.cli`)
 3. Monitor console output for progress
 4. Find enriched yearly master files in `Yearly_Masters/` folder
 
@@ -540,7 +559,7 @@ Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
 
 ### **macOS**
 
-- Default data location: `/Users/YourName/FAA_UAS_Sightings`
+- Set `FAA_DATA_PATH` to your preferred folder
 - File permissions: Automatically set to 0600
 - Environment variables:
 
@@ -550,7 +569,7 @@ Adjust `MAX_FILE_SIZE_MB` if processing legitimate large files.
 
 ### **Linux**
 
-- Default data location: `/home/YourName/FAA_UAS_Sightings`
+- Set `FAA_DATA_PATH` to your preferred folder
 - File permissions: Automatically set to 0600
 - Works on all distributions (Ubuntu, Fedora, Debian, etc.)
 - Environment variables:
